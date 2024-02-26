@@ -2,8 +2,12 @@ import credentials
 import spotify
 
 sp = spotify.Spotify(
-    access_token=credentials.TOKEN
+    token=credentials.TOKEN
 )
+
+@sp.event
+async def on_connection_verify(ctx :spotify.ConnectionVerify):
+    print(ctx.todict())
 
 @sp.event
 async def on_websocket_raw(ctx :spotify.WebsocketRaw):

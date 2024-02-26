@@ -1,10 +1,18 @@
+import random
 import asyncio
 import websockets
 import datetime
 import json
+import requests
 import shared
 
 class WebsocketRaw:
+    def __init__(self, data :dict=None):
+        self.data :dict = data
+    def todict(self):
+        return self.__dict__
+
+class ConnectionVerify:
     def __init__(self, data :dict=None):
         self.data :dict = data
     def todict(self):
@@ -17,17 +25,33 @@ class WebsocketPing:
         return self.__dict__
 
 class Spotify:
-    def __init__(self, access_token: str = None):
+    def __init__(self, token: str = None):
         self.event_handlers = {}
         self.config = {
             "spotify": {
                 "getaway": {
                     "websocket": "wss://dealer.spotify.com"
                 },
-                "access_token": access_token if access_token != None and isinstance(access_token, str) else None
+                "token": token if token != None and isinstance(token, str) else None
             }
         }
-        self.shared = shared.Shared()
+        with requests.Session() as rss:
+            self.rss = rss
+        self.shared = shared.Shared(
+            rss=self.rss
+        )
+    def request(self, config :dict=None):
+        if config != None and isinstance(config, dict):
+            req = self.rss.request(
+                *self.shared.convert_json_to_values(
+                    config=config
+                )
+            )
+            if req.status_code == 200:
+                return req
+    def construct(self, url :str=None, params :dict=None):
+        if url != None and isinstance(url, str) and params != None and isinstance(params, dict):
+            return f'{url}?{self.shared.dtsup(params)}'
     def event(self, event_type=None):
         return self._register_event(event_type=event_type)
     def _register_event(self, event_type=None):
@@ -48,15 +72,64 @@ class Spotify:
     async def receive_data(self, websocket):
         while True:
             data = await websocket.recv()
-            await self.trigger_event("on_websocket_raw", WebsocketRaw(data=json.loads(data)))
+            loaded_data = json.loads(data)
+            if loaded_data != None and isinstance(loaded_data, dict) and "headers" in loaded_data and loaded_data["headers"] != None and isinstance(loaded_data["headers"], dict) and "Spotify-Connection-Id" in loaded_data["headers"] and loaded_data["headers"]["Spotify-Connection-Id"] != None and isinstance(loaded_data["headers"]["Spotify-Connection-Id"], str):
+                verified = self.verifydevice(
+                    spotify_connection_id=loaded_data["headers"]["Spotify-Connection-Id"]
+                )
+                if verified != None:
+                    await self.trigger_event("on_connection_verify", ConnectionVerify(data=verified))
+            await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data))
     async def start(self):
-        async with websockets.connect(
-                f'{self.config["spotify"]["getaway"]["websocket"]}?{self.shared.dtsup(d1ct={
-                    "access_token": self.config["spotify"]["access_token"]
-                })}'
-        ) as websocket:
-            ping_task = asyncio.create_task(self.send_ping(websocket))
-            data_task = asyncio.create_task(self.receive_data(websocket))
-            await asyncio.gather(ping_task, data_task)
+        if self.config["spotify"]["token"] != None:
+            async with websockets.connect(
+                self.construct(
+                    url=self.config["spotify"]["getaway"]["websocket"],
+                    params={
+                        "access_token": self.config["spotify"]["token"]
+                    }
+                )
+            ) as websocket:
+                ping_task = asyncio.create_task(self.send_ping(websocket))
+                data_task = asyncio.create_task(self.receive_data(websocket))
+                await asyncio.gather(ping_task, data_task)
+    def generate_hex_string(self, length :int=None):
+        if length != None and isinstance(length, int):
+            hex_characters = '0123456789abcdef'
+            hex_string = ''.join(random.choice(hex_characters) for _ in range(length))
+            return hex_string
+    def hex_to_ascii(self, hex_string :str=None):
+        if hex_string != None and isinstance(hex_string, str):
+            ascii_string = ''
+            for i in range(0, len(hex_string), 2):
+                ascii_string += chr(int(hex_string[i:i+2], 16))
+            return ascii_string
+    def verifydevice(self, spotify_connection_id :str=None):
+        if self.config["spotify"]["token"] != None and spotify_connection_id != None and isinstance(spotify_connection_id, str):
+            config = {
+                "method": "put",
+                "url": f"https://gew1-spclient.spotify.com/connect-state/v1/devices/hobs_{self.hex_to_ascii(self.generate_hex_string(24))}",
+                "data": json.dumps({
+                    "member_type": "CONNECT_STATE",
+                    "device": {
+                        "device_info": {
+                            "capabilities": {
+                                "can_be_player": False,
+                                "hidden": True,
+                                "needs_full_player_state": True
+                            }
+                        }
+                    }
+                }),
+                "headers": {
+                    "Authorization": f'Bearer {self.config["spotify"]["token"]}',
+                    "X-Spotify-Connection-Id": spotify_connection_id
+                }
+            }
+            req = self.request(
+                config=config
+            )
+            if req != None:
+                return req.json()
     def run(self):
         asyncio.run(self.start())
