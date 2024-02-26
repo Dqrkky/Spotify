@@ -7,10 +7,10 @@ sp = spotify.Spotify(
 
 @sp.event
 async def on_websocket_raw(ctx :spotify.WebsocketRaw):
-    print(ctx.data)
+    print(ctx.todict())
 
 @sp.event
 async def on_websocket_ping(ctx :spotify.WebsocketPing):
-    print(ctx.time)
+    print(ctx.todict())
 
 sp.run()
