@@ -16,6 +16,10 @@ async def on_websocket_raw(ctx :spotify.WebsocketRaw):
 async def on_websocket_ping(ctx :spotify.WebsocketPing):
     print(ctx.todict())
 
+@sp.event
+async def on_user_interaction_raw(ctx :spotify.UserInteraction):
+    print(ctx.todict())
+
 try:
     sp.run()
 except Exception as e:

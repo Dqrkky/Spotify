@@ -18,6 +18,12 @@ class ConnectionVerify:
     def todict(self):
         return self.__dict__
 
+class UserInteraction:
+    def __init__(self, data :dict=None):
+        self.data :dict = data
+    def todict(self):
+        return self.__dict__
+
 class WebsocketPing:
     def __init__(self, time :datetime.datetime=None):
         self.time :datetime.datetime = time
@@ -84,7 +90,13 @@ class Spotify:
                     if "content-type" in loaded_data["headers"] and loaded_data["headers"]["content-type"] != None and isinstance(loaded_data["headers"]["content-type"], str):
                         if "application/json" == loaded_data["headers"]["content-type"]:
                             if "payloads" in loaded_data and loaded_data["payloads"] != None and isinstance(loaded_data["payloads"], list) and len(loaded_data["payloads"]) > 0:
-                                await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data["payloads"][0]))
+                                if loaded_data["payloads"][0] != None and isinstance(loaded_data["payloads"][0], dict):
+                                    await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data["payloads"][0]))
+                    if "Content-Type" in loaded_data["headers"] and loaded_data["headers"]["Content-Type"] != None and isinstance(loaded_data["headers"]["Content-Type"], str):
+                        if "text/plain" == loaded_data["headers"]["Content-Type"]:
+                            if "payloads" in loaded_data and loaded_data["payloads"] != None and isinstance(loaded_data["payloads"], list) and len(loaded_data["payloads"]) > 0:
+                                if loaded_data["payloads"][0] != None and isinstance(loaded_data["payloads"][0], str):
+                                    await self.trigger_event("on_user_interaction_raw", UserInteraction(data=json.loads(loaded_data["payloads"][0])))
     async def start(self):
         if self.config["spotify"]["token"] != None:
             async with websockets.connect(
