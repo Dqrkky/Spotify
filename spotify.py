@@ -73,13 +73,19 @@ class Spotify:
         while True:
             data = await websocket.recv()
             loaded_data = json.loads(data)
-            if loaded_data != None and isinstance(loaded_data, dict) and "headers" in loaded_data and loaded_data["headers"] != None and isinstance(loaded_data["headers"], dict) and "Spotify-Connection-Id" in loaded_data["headers"] and loaded_data["headers"]["Spotify-Connection-Id"] != None and isinstance(loaded_data["headers"]["Spotify-Connection-Id"], str):
-                verified = self.verifydevice(
-                    spotify_connection_id=loaded_data["headers"]["Spotify-Connection-Id"]
-                )
-                if verified != None:
-                    await self.trigger_event("on_connection_verify", ConnectionVerify(data=verified))
-            await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data))
+            if loaded_data != None and isinstance(loaded_data, dict):
+                if "headers" in loaded_data and loaded_data["headers"] != None and isinstance(loaded_data["headers"], dict):
+                    if "Spotify-Connection-Id" in loaded_data["headers"] and loaded_data["headers"]["Spotify-Connection-Id"] != None and isinstance(loaded_data["headers"]["Spotify-Connection-Id"], str):
+                        verified = self.verifydevice(
+                            spotify_connection_id=loaded_data["headers"]["Spotify-Connection-Id"]
+                        )
+                        if verified != None:
+                            await self.trigger_event("on_connection_verify", ConnectionVerify(data=verified))
+                    if "content-type" in loaded_data["headers"] and loaded_data["headers"]["content-type"] != None and isinstance(loaded_data["headers"]["content-type"], str):
+                        if "application/json" == loaded_data["headers"]["content-type"]:
+                            if "payloads" in loaded_data and loaded_data["payloads"] != None and isinstance(loaded_data["payloads"], list) and len(loaded_data["payloads"]) > 0:
+                                if "cluster" in loaded_data["payloads"][0] and loaded_data["payloads"][0]["cluster"] != None and isinstance(loaded_data["payloads"][0]["cluster"], dict):
+                                    await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data["payloads"][0]["cluster"]))
     async def start(self):
         if self.config["spotify"]["token"] != None:
             async with websockets.connect(

@@ -4,6 +4,7 @@ import spotify
 sp = spotify.Spotify(
     token=credentials.TOKEN
 )
+spde = spotifydecoder.Decode()
 
 @sp.event
 async def on_connection_verify(ctx :spotify.ConnectionVerify):
