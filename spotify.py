@@ -84,8 +84,7 @@ class Spotify:
                     if "content-type" in loaded_data["headers"] and loaded_data["headers"]["content-type"] != None and isinstance(loaded_data["headers"]["content-type"], str):
                         if "application/json" == loaded_data["headers"]["content-type"]:
                             if "payloads" in loaded_data and loaded_data["payloads"] != None and isinstance(loaded_data["payloads"], list) and len(loaded_data["payloads"]) > 0:
-                                if "cluster" in loaded_data["payloads"][0] and loaded_data["payloads"][0]["cluster"] != None and isinstance(loaded_data["payloads"][0]["cluster"], dict):
-                                    await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data["payloads"][0]["cluster"]))
+                                await self.trigger_event("on_websocket_raw", WebsocketRaw(data=loaded_data["payloads"][0]))
     async def start(self):
         if self.config["spotify"]["token"] != None:
             async with websockets.connect(

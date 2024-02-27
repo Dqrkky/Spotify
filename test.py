@@ -16,4 +16,7 @@ async def on_websocket_raw(ctx :spotify.WebsocketRaw):
 async def on_websocket_ping(ctx :spotify.WebsocketPing):
     print(ctx.todict())
 
-sp.run()
+try:
+    sp.run()
+except Exception as e:
+    print(f'Error Type : {type(e).__name__} | Error : {e}')
