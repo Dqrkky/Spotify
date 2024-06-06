@@ -35,7 +35,7 @@ class Shared:
                 config["allow_redirects"] if "allow_redirects" in config and config["allow_redirects"] and isinstance(config["allow_redirects"], bool) else True,
                 config["proxies"] if "proxies" in config and config["proxies"] else None,
                 config["hooks"] if "hooks" in config and config["hooks"] else None,
-                config["stream"] if "stream" in config and config["stream"] isinstance(config["stream"], bool) else False,
+                config["stream"] if "stream" in config and config["stream"] and isinstance(config["stream"], bool) else False,
                 config["verify"] if "verify" in config and config["verify"] else None,
                 config["cert"] if "cert" in config and config["cert"] else None,
                 config["json"] if "json" in config and config["json"] else None,

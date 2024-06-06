@@ -31,7 +31,7 @@ class WebsocketPing:
         return self.__dict__
 
 class Spotify:
-    def __init__(self, token: str = None):
+    def __init__(self, access_token: str = None):
         self.event_handlers = {}
         self.config = {
             "getaway": {
@@ -170,15 +170,7 @@ class Spotify:
             if spotify_connection_id and isinstance(spotify_connection_id, str):
                 config = {
                     "method": "put",
-                    "url": f"f{
-                        self.config['getaway']['api']
-                    }/connect-state/v1/devices/hobs_{
-                        self.hex_to_ascii(
-                            hex_string=self.generate_hex_string(
-                              length=24
-                            )
-                        )
-                    }",
+                    "url": f"{self.config['getaway']['api']}/connect-state/v1/devices/hobs_{self.hex_to_ascii(hex_string=self.generate_hex_string(length=24))}",
                     "data": json.dumps({
                         "member_type": "CONNECT_STATE",
                         "device": {
