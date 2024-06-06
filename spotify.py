@@ -35,7 +35,7 @@ class Spotify:
         self.event_handlers = {}
         self.config = {
             "getaway": {
-                "api": "https://gew1-spclient.spotify.com"
+                "api": "https://gew1-spclient.spotify.com",
                 "websocket": "wss://dealer.spotify.com"
             },
             "access_token": access_token if access_token and isinstance(access_token, str) else None
@@ -171,7 +171,7 @@ class Spotify:
                 config = {
                     "method": "put",
                     "url": f"f{
-                        self.config["getaway"]["api"]
+                        self.config['getaway']['api']
                     }/connect-state/v1/devices/hobs_{
                         self.hex_to_ascii(
                             hex_string=self.generate_hex_string(
