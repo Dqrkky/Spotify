@@ -40,9 +40,9 @@ class Shared:
                 config["cert"] if "cert" in config and config["cert"] else None,
                 config["json"] if "json" in config and config["json"] else None,
             )
-    def dtsup(self, d1ct :dict=None):
-        if d1ct and isinstance(d1ct, dict):
-            return urllib.parse.urlencode(query=d1ct)
+    def dtsup(self, params :dict=None):
+        if params and isinstance(params, dict):
+            return urllib.parse.urlencode(query=params)
     def construct(self, url :str=None, params :str=None):
         if url and isinstance(url, str) and params and isinstance(params, dict):
             return f"{url}?{self.dtsup(params=params)}"

@@ -1,7 +1,7 @@
 import spotify
 
 sp = spotify.Spotify(
-    access_token="hbgjvnnfnfnnnc"
+    access_token="gsgsgsdgsgsdhsdhf"
 )
 
 @sp.event
@@ -23,4 +23,9 @@ async def on_user_interaction_raw(ctx :spotify.UserInteraction):
 try:
     sp.run()
 except Exception as e:
-    print(f'Error Type : {type(e).__name__} | Error : {e}')
+    error = {
+        "error": list(e.args),
+        "error_type": type(e).__name__,
+        "error_module": type(e).__module__
+    }
+    print(error)

@@ -38,6 +38,10 @@ class Spotify:
                 "api": "https://gew1-spclient.spotify.com",
                 "websocket": "wss://dealer.spotify.com"
             },
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.42",
+            },
+            "ping_interval": 5,
             "access_token": access_token if access_token and isinstance(access_token, str) else None
         }
         with requests.Session() as rss:
@@ -45,6 +49,10 @@ class Spotify:
         self.shared = shared.Shared(
             rss=self.rss
         )
+        if hasattr(self, "rss") and self.rss and isinstance(self.rss, requests.Session) and \
+        hasattr(self, "config") and self.config and isinstance(self.config, dict) and \
+        "headers" in self.config and self.config["headers"] and isinstance(self.config["headers"], dict):
+            self.rss.headers.update(self.config["headers"])
     def request(self, config :dict=None):
         if config and isinstance(config, dict):
             req = self.rss.request(
@@ -67,8 +75,8 @@ class Spotify:
         if event_name and event_data:
             if event_name in self.event_handlers:
                 await self.event_handlers[event_name](event_data)
-    async def send_ping(self, websocket=None):
-        if websocket:
+    async def send_ping(self, websocket=None, ping_interval :int=None):
+        if websocket and ping_interval and isinstance(ping_interval, int):
             while True:
                 await websocket.ping()
                 await self.trigger_event(
@@ -77,7 +85,7 @@ class Spotify:
                       time=datetime.datetime.now()
                     )
                 )
-                await asyncio.sleep(5)
+                await asyncio.sleep(ping_interval)
     async def receive_data(self, websocket=None):
         if websocket:
             while True:
@@ -127,7 +135,8 @@ class Spotify:
                                             )
     async def start(self):
         if hasattr(self, "config") and self.config and isinstance(self.config, dict) and \
-        "access_token" in self.config and self.config["access_token"] and isinstance(self.config["access_token"], dict) and \
+        "ping_interval" in self.config and self.config["ping_interval"] and isinstance(self.config["ping_interval"], int) and \
+        "access_token" in self.config and self.config["access_token"] and isinstance(self.config["access_token"], str) and \
         "getaway" in self.config and self.config["getaway"] and isinstance(self.config["getaway"], dict) and \
         "api" in self.config["getaway"] and self.config["getaway"]["api"] and isinstance(self.config["getaway"]["api"], str):
             async with websockets.connect(
@@ -140,7 +149,8 @@ class Spotify:
             ) as websocket:
                 ping_task = asyncio.create_task(
                     self.send_ping(
-                        websocket=websocket
+                        websocket=websocket,
+                        ping_interval=self.config["ping_interval"]
                     )
                 )
                 data_task = asyncio.create_task(
