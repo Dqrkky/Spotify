@@ -79,7 +79,7 @@ class Spotify:
         if websocket and ping_interval and isinstance(ping_interval, int):
             while True:
                 await asyncio.sleep(ping_interval)
-                pawait websocket.ping()
+                await websocket.ping()
                 await self.trigger_event(
                     event_name="on_websocket_ping",
                     event_data=WebsocketPing(
