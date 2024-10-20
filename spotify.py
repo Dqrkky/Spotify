@@ -39,7 +39,7 @@ class Spotify:
                 "websocket": "wss://dealer.spotify.com"
             },
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.42",
+                "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.42",
             },
             "ping_interval": 5,
             "access_token": access_token if access_token and isinstance(access_token, str) else None
@@ -60,6 +60,7 @@ class Spotify:
                     config=config
                 )
             )
+            print([req.text])
             if req.status_code == 200:
                 return req
     def event(self, event_type=None):
@@ -78,14 +79,14 @@ class Spotify:
     async def send_ping(self, websocket=None, ping_interval :int=None):
         if websocket and ping_interval and isinstance(ping_interval, int):
             while True:
-                await asyncio.sleep(ping_interval)
-                pawait websocket.ping()
+                await websocket.ping()
                 await self.trigger_event(
                     event_name="on_websocket_ping",
                     event_data=WebsocketPing(
                       time=datetime.datetime.now()
                     )
                 )
+                await asyncio.sleep(ping_interval)
     async def receive_data(self, websocket=None):
         if websocket:
             while True:
@@ -97,7 +98,7 @@ class Spotify:
                         )
                     except Exception as e:
                         loaded_data = None
-                        print(f"Error Type : {tye(e).__name__}\nError : {e.__name__}")
+                        print(f"Error Type : {type(e).__name__}\nError : {e.__name__}")
                     if loaded_data and isinstance(loaded_data, dict):
                         if "headers" in loaded_data and loaded_data["headers"] and isinstance(loaded_data["headers"], dict):
                             if "Spotify-Connection-Id" in loaded_data["headers"] and loaded_data["headers"]["Spotify-Connection-Id"] and isinstance(loaded_data["headers"]["Spotify-Connection-Id"], str):
@@ -174,7 +175,7 @@ class Spotify:
             return ascii_string
     def verifydevice(self, spotify_connection_id :str=None):
         if hasattr(self, "config") and self.config and isinstance(self.config, dict) and \
-        "access_token" in self.config and self.config["access_token"] and isinstance(self.config["access_token"], dict) and \
+        "access_token" in self.config and self.config["access_token"] and isinstance(self.config["access_token"], str) and \
         "getaway" in self.config and self.config["getaway"] and isinstance(self.config["getaway"], dict) and \
         "api" in self.config["getaway"] and self.config["getaway"]["api"] and isinstance(self.config["getaway"]["api"], str):
             if spotify_connection_id and isinstance(spotify_connection_id, str):
@@ -195,7 +196,8 @@ class Spotify:
                     }),
                     "headers": {
                         "Authorization": f'Bearer {self.config["access_token"]}',
-                        "X-Spotify-Connection-Id": spotify_connection_id
+                        "X-Spotify-Connection-Id": spotify_connection_id,
+                        "Content-Type": "application/json"
                     }
                 }
                 req = self.request(

@@ -1,7 +1,7 @@
 import spotify
 
 sp = spotify.Spotify(
-    access_token="gsgsgsdgsgsdhsdhf"
+    access_token=""
 )
 
 @sp.event
