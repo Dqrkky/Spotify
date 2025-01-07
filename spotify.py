@@ -64,7 +64,6 @@ class Spotify:
                     config=config
                 )
             )
-            print([req.text])
             if req.status_code == 200:
                 return req
     def event(self, event_type=None):

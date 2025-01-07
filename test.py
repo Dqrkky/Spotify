@@ -1,7 +1,11 @@
 import spotify
+import dotenv
+import os
+
+dotenv.load_dotenv()
 
 sp = spotify.Spotify(
-    access_token=""
+    access_token=os.getenv("TOKEN")
 )
 
 @sp.event
