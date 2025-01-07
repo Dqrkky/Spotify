@@ -8,24 +8,28 @@ import shared
 
 class WebsocketRaw:
     def __init__(self, data :dict=None):
+        self.type = "WebsocketRaw"
         self.data :dict = data
     def todict(self):
         return self.__dict__
 
 class ConnectionVerify:
     def __init__(self, data :dict=None):
+        self.type = "ConnectionVerify"
         self.data :dict = data
     def todict(self):
         return self.__dict__
 
 class UserInteraction:
     def __init__(self, data :dict=None):
+        self.type = "UserInteraction"
         self.data :dict = data
     def todict(self):
         return self.__dict__
 
 class WebsocketPing:
     def __init__(self, time :datetime.datetime=None):
+        self.type = "WebsocketPing"
         self.time :datetime.datetime = time
     def todict(self):
         return self.__dict__
