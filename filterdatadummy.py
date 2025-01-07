@@ -15,12 +15,13 @@ def print_json(config :dict=None):
             "duration": data["cluster"]["player_state"]["duration"],
             "durationInMinutes": ((int(data["cluster"]["player_state"]["duration"]) / 1000) / 60),
             "devices": [{
+                "id": device,
                 "name": data["cluster"]["devices"][device]["name"],
                 "volume": data["cluster"]["devices"][device]["volume"],
                 "brand": data["cluster"]["devices"][device]["brand"],
                 "model": data["cluster"]["devices"][device]["model"],
                 "public_ip": data["cluster"]["devices"][device]["public_ip"],
-            } for device in data["devices_that_changed"]]
+            } for device in data["cluster"]["devices"]]
         }
         print(
             "-" * 50 + "\n" +
