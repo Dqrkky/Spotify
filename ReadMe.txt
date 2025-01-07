@@ -1,1 +1,0 @@
-Because i dont know how to initialize a pusher im not gonna be bothered https://pusher.com
