@@ -1,4 +1,7 @@
 import json
+import os
+import requests
+import re
 
 def print_json(config :dict=None):
     if config != None and isinstance(config, dict):  # noqa: E711
@@ -20,9 +23,11 @@ def print_json(config :dict=None):
                 "volume": data["cluster"]["devices"][device]["volume"],
                 "brand": data["cluster"]["devices"][device]["brand"],
                 "model": data["cluster"]["devices"][device]["model"],
-                "public_ip": data["cluster"]["devices"][device]["public_ip"],
-            } for device in data["cluster"]["devices"]]
+                "public_ip": ".".join(data["cluster"]["devices"][device]["public_ip"].split(".")[:2]+["*"]*2),
+            } for device in data["cluster"]["devices"]],
+            "message": [json.loads(match[1]) for match in re.findall(r'<script[^>]*type="application/(ld\+json|json)"[^>]*>({.*?})</script>', requests.get(f'https://open.spotify.com/track/{data["cluster"]["player_state"]["track"]["uri"].split(":")[-1]}').text, re.DOTALL)][0]["name"]
         }
+        os.system("cls")
         print(
             "-" * 50 + "\n" +
             json.dumps(
