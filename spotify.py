@@ -5,6 +5,7 @@ import datetime
 import json
 import requests
 import shared
+import uuid
 
 class WebsocketRaw:
     def __init__(self, data :dict=None):
@@ -64,8 +65,7 @@ class Spotify:
                     config=config
                 )
             )
-            if req.status_code == 200:
-                return req
+            return req
     def event(self, event_type=None):
         return self._register_event(event_type=event_type)
     def _register_event(self, event_type=None):
@@ -101,7 +101,6 @@ class Spotify:
                         )
                     except Exception as e:
                         loaded_data = None
-                        print(f"Error Type : {type(e).__name__}\nError : {e.__name__}")
                     if loaded_data and isinstance(loaded_data, dict):
                         if "headers" in loaded_data and loaded_data["headers"] and isinstance(loaded_data["headers"], dict):
                             if "Spotify-Connection-Id" in loaded_data["headers"] and loaded_data["headers"]["Spotify-Connection-Id"] and isinstance(loaded_data["headers"]["Spotify-Connection-Id"], str):
@@ -182,9 +181,41 @@ class Spotify:
         "getaway" in self.config and self.config["getaway"] and isinstance(self.config["getaway"], dict) and \
         "api" in self.config["getaway"] and self.config["getaway"]["api"] and isinstance(self.config["getaway"]["api"], str):
             if spotify_connection_id and isinstance(spotify_connection_id, str):
+                device_id = self.hex_to_ascii(hex_string=self.generate_hex_string(length=24))
+                default_headers = {
+                    'accept': 'application/json',
+                    'content-type': 'application/json',
+                    'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-site'
+                }
+                config0 = {
+                    "method": "post",
+                    "url": "https://clienttoken.spotify.com/v1/clienttoken",
+                    "headers": {
+                        **default_headers
+                    },
+                    "json": {
+                        'client_data': {
+                            'client_version': "1.2.18.564.g83d531e5",
+                            'client_id': 'd8a5ed958d274c2e8ee717e6a4b0971d',
+                            'js_sdk_data': {
+                                'device_brand': 'unknown',
+                                'device_model': 'unknown',
+                                'os': 'windows',
+                                'os_version': 'NT 10.0',
+                                'device_id': str(uuid.uuid4()),
+                                'device_type': 'computer'
+                            }
+                        }
+                    }
+                }
                 config = {
                     "method": "put",
-                    "url": f"{self.config['getaway']['api']}/connect-state/v1/devices/hobs_{self.hex_to_ascii(hex_string=self.generate_hex_string(length=24))}",
+                    "url": f"https://guc-spclient.spotify.com/connect-state/v1/devices/hobs_{device_id}",
                     "data": json.dumps({
                         "member_type": "CONNECT_STATE",
                         "device": {
@@ -198,9 +229,10 @@ class Spotify:
                         }
                     }),
                     "headers": {
+                        **default_headers,
                         "Authorization": f'Bearer {self.config["access_token"]}',
                         "X-Spotify-Connection-Id": spotify_connection_id,
-                        "Content-Type": "application/json"
+                        "client-token": self.request(config=config0).json()["granted_token"]["token"]
                     }
                 }
                 req = self.request(
