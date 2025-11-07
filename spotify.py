@@ -99,7 +99,7 @@ class Spotify:
                         loaded_data = json.loads(
                             data
                         )
-                    except Exception as e:
+                    except Exception:
                         loaded_data = None
                     if loaded_data and isinstance(loaded_data, dict):
                         if "headers" in loaded_data and loaded_data["headers"] and isinstance(loaded_data["headers"], dict):
@@ -215,7 +215,7 @@ class Spotify:
                 }
                 config = {
                     "method": "put",
-                    "url": f"https://guc-spclient.spotify.com/connect-state/v1/devices/hobs_{device_id}",
+                    "url": f"https://gew1-spclient.spotify.com/connect-state/v1/devices/hobs_{device_id}",
                     "data": json.dumps({
                         "member_type": "CONNECT_STATE",
                         "device": {

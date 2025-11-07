@@ -1,12 +1,13 @@
 import spotify
 import dotenv
-import os
 from filterdatadummy import print_json
 
-dotenv.load_dotenv()
+dot = dotenv.dotenv_values(
+    dotenv_path=".env"
+)
 
 sp = spotify.Spotify(
-    access_token=os.getenv("TOKEN")
+    access_token=dot.get("TOKEN", None)
 )
 
 @sp.event
